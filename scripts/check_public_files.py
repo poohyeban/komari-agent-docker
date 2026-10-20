@@ -10,6 +10,7 @@ allowed = {
     ".gitignore", ".github/workflows/check.yml", "README.md", "SECURITY.md", "COMPATIBILITY.md",
     "deploy.example.json", "manage.py", "security/apparmor/komari-agent.profile.in",
     "security/seccomp/amd64.json", "tests/test_manage.py", "tests/container_smoke.py",
+    "tests/mock_panel.py", "tests/runtime_smoke.py",
     "scripts/check_public_files.py",
 }
 tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")

@@ -2,6 +2,7 @@
 """Isolated Linux CI smoke test. Never registers an agent or contacts a panel."""
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -22,6 +23,7 @@ with tempfile.TemporaryDirectory(prefix="komari-smoke-") as tmp:
     root = Path(tmp)
     shutil.copytree(ROOT / "security", root / "security")
     cfg = json.loads((ROOT / "deploy.example.json").read_text())
+    cfg["image"] = os.environ.get("KOMARI_TEST_IMAGE", cfg["image"])
     cfg["project_name"] = "smoke-" + uuid.uuid4().hex[:12]
     cfg["agent"].update(endpoint="https://panel.example.invalid", token="test-only-not-a-real-token", include_nics="lo")
     m.validate(cfg); m.render(cfg, root)
