@@ -54,7 +54,7 @@ with tempfile.TemporaryDirectory(prefix="komari-runtime-") as tmp:
         run(["docker", "pull", cfg["image"]])
         run(["docker", "pull", "python:3.12-alpine"])
         run(["apparmor_parser", "-r", "-T", str(profile)]); loaded = True
-        run(["docker", "run", "-d", "--name", panel, "--network", "none", "--read-only",
+        run(["docker", "run", "-d", "--name", panel, "--hostname", "localhost", "--network", "none", "--read-only",
              "--cap-drop", "ALL", "--security-opt", "no-new-privileges:true",
              "--mount", f"type=bind,src={fixture},dst=/fixture", "python:3.12-alpine", "python", "/fixture/server.py"])
         for _ in range(30):
@@ -65,6 +65,7 @@ with tempfile.TemporaryDirectory(prefix="komari-runtime-") as tmp:
         service = model["services"]["agent"]
         # Only networking and test CA differ from the production model. No public route exists.
         service["network_mode"] = "container:" + panel
+        service.pop("hostname")  # Shared network mode inherits the fixture hostname.
         service["restart"] = "no"
         service["volumes"].append({"type": "bind", "source": str(fixture / "cert.pem"),
                                    "target": "/etc/ssl/certs/ca-certificates.crt", "read_only": True})
@@ -119,5 +120,6 @@ with tempfile.TemporaryDirectory(prefix="komari-runtime-") as tmp:
         raise
     finally:
         if agent_id: subprocess.run(["docker", "rm", "-f", agent_id], capture_output=True)
+        subprocess.run(m.compose(cfg, "down", root=root), capture_output=True)
         subprocess.run(["docker", "rm", "-f", panel], capture_output=True)
         if loaded: run(["apparmor_parser", "-R", "-T", str(profile)])
