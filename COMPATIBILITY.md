@@ -10,8 +10,30 @@
 | 本仓库生成器 | 单元测试覆盖配置校验、凭据文件权限、生成结果、安全边界和项目冲突；集成检查结果见 GitHub Actions |
 | Debian 13 amd64 | 原部署验证环境；其他发行版需通过宿主机预检和实际验收 |
 | Ubuntu 24.04 amd64 | GitHub Actions 使用的隔离检查环境；不连接真实面板 |
-| Agent 1.5.11 | 做过源码对比；未以当前完整安全策略完成真实面板运行验证，不能宣称端到端兼容 |
+| Agent 1.5.11 / Linux amd64 | 已通过当前安全策略下的隔离运行验证：v2 持续上报、ICMP/TCP/HTTP、远程执行及文件操作禁用、数据落盘和重启后上报；真实生产面板及目标宿主机指标准确性仍需验收 |
 | ARM64 / rootless / userns-remap / 无 AppArmor | 当前不支持，工具会拒绝运行，不降级安全策略 |
+
+## 1.5.11 验证记录
+
+2026-10-20，官方 `1.5.11` 与基线 `1.2.60` 在 Ubuntu 24.04 amd64 GitHub runner 上均通过[同一套测试](https://github.com/poohyeban/komari-agent-docker/actions/runs/39353631363)，测试和策略提交为 `e1f9cfb`。本次没有修改生产部署工具或放宽安全策略。
+
+可在 `deploy.json` 的 `image` 中配置以下已测试镜像：
+
+```text
+ghcr.io/komari-monitor/komari-agent:1.5.11@sha256:196965643c259f390743705883fc82f9cd1bfa200a1172a75e7d9e1f190c5c18
+```
+
+对应官方源码 revision 为 `c7bafb79b1a73ed9e14e2c248ae4d4163e506036`。测试包括：
+
+- 使用生成的配置启动实际 Agent，模拟 HTTPS/WSS 面板收到至少 10 次 v2 上报。
+- Agent 执行本地 ICMP、TCP、HTTP 任务并返回成功结果。
+- `disable_web_ssh=true` 拒绝远程执行；1.5.11 新增的远程文件操作也返回禁用错误。
+- 实际 Agent 进程保持 AppArmor enforce、seccomp、NNP 和仅 `NET_RAW`；只读根目录、宿主进程敏感信息及 PTY 限制检查通过。
+- 流量历史写入持久化目录，容器停止再启动后恢复上报；测试期间无 OOM 或自动重启。
+
+为避免外部访问，运行测试将生产的 host 网络替换为与模拟面板共享的 `network none` 网络命名空间，继承其 hostname，并挂载测试 CA；同时禁用自动重启以暴露崩溃。安全策略、资源限制和 Agent 业务配置结构沿用生产生成器。测试不验证公网探测、真实面板认证、长期稳定性或每台宿主机的指标准确性，也没有改动现有 VPS。
+
+默认示例仍保留 `1.2.60`。切换到 `1.5.11` 时按 README 的备份、升级、验收流程执行，面板必须支持 v2。
 
 ## 版本相关依赖
 

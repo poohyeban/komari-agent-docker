@@ -16,6 +16,8 @@
 
 默认镜像固定为 `1.2.60` 与对应仓库摘要。这是已验证部署的基线，**不是声称它是官方最新版**。镜像引用可以修改；新版本仍需兼容性验证，见 [COMPATIBILITY.md](COMPATIBILITY.md)。不声明支持任意未来版本或任意 Linux 机器。
 
+`1.5.11` 已通过当前安全策略下的 Linux amd64 隔离运行测试，可在统一配置中选择；固定镜像引用、测试范围及真实面板验收要求见 [1.5.11 验证记录](COMPATIBILITY.md#1511-验证记录)。
+
 ## 目录与配置
 
 ```text
@@ -165,6 +167,6 @@ python3 scripts/check_public_files.py
 git diff --check
 ```
 
-GitHub Actions 在独立 Linux runner 中检查配置生成和公开文件清单，再拉取固定的基线镜像、解析 Compose、加载一次专用 AppArmor profile，并用 `--network none` 检查帮助命令、本地 ICMP 和权限限制。测试只使用占位凭据，不启动连接面板的 Agent，也不访问现有 VPS，结束时卸载测试策略。
+GitHub Actions 在独立 Linux runner 中检查配置生成和公开文件清单，再分别拉取固定摘要的 `1.2.60`、`1.5.11` 镜像，解析 Compose、加载专用 AppArmor profile，并用 `--network none` 检查帮助命令、本地 ICMP 和权限限制。运行测试会启动实际 Agent，通过无外网的共享网络命名空间连接模拟 HTTPS/WSS 面板，检查持续上报、ICMP/TCP/HTTP、远程控制禁用、数据落盘及重启后恢复上报。测试只使用占位凭据，不访问真实面板或现有 VPS，结束时清理测试容器和策略。
 
 CI 的隔离测试不等于真实面板端到端验证。新增官方版本和架构应分别记录检查结果，不能只修改矩阵名称就宣称已兼容。仓库文件发布前仍需人工审查；`.gitignore` 和凭据模式检查无法证明不存在任意形式的秘密。
