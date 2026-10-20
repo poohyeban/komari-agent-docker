@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "project_name": "komari-agent",
+  "image": "ghcr.io/komari-monitor/komari-agent:1.2.60@sha256:cb90c04a55afd4a5046d462ef11d5573a79bbb2184316c6d60bb343ed146896e",
+  "agent": {
+    "endpoint": "https://komari.example.com",
+    "token": "REPLACE_WITH_NODE_TOKEN",
+    "include_nics": "REPLACE_WITH_INTERFACE",
+    "include_mountpoints": "/",
+    "month_rotate": 0,
+    "interval": 3,
+    "info_report_interval": 5,
+    "max_retries": 3,
+    "reconnect_interval": 5,
+    "disable_web_ssh": true,
+    "disable_auto_update": true
+  },
+  "resources": {
+    "memory_mb": 128,
+    "cpus": 0.5,
+    "pids_limit": 64,
+    "tmpfs_mb": 16,
+    "nofile": 1024,
+    "stop_grace_seconds": 20,
+    "log_max_size_mb": 10,
+    "log_max_files": 3
+  }
+}

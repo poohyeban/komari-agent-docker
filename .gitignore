@@ -1,0 +1,25 @@
+# Only reviewed templates and source belong in this repository.
+/deploy.json
+/deploy.*.json
+!/deploy.example.json
+/.generated/
+/data/
+/backups/
+/.env
+/.env.*
+*.bak
+*.backup
+*.log
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+__pycache__/
+*.pyc
+.DS_Store
+id_ed25519*
+id_rsa*
+*.key
+*.pem
+reg.json
+net_static.json
